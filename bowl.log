@@ -1,0 +1,2 @@
+03:04:43 [INFO] info ==== BowlArg { debug: Some(true), command: "bash", uid: 1, mount_dir: "./home" }
+03:04:43 [DEBUG] (1) bowl_rs: debug ===== BowlArg { debug: Some(true), command: "bash", uid: 1, mount_dir: "./home" }
