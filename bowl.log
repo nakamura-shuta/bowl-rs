@@ -1,2 +1,4 @@
-03:04:43 [INFO] info ==== BowlArg { debug: Some(true), command: "bash", uid: 1, mount_dir: "./home" }
-03:04:43 [DEBUG] (1) bowl_rs: debug ===== BowlArg { debug: Some(true), command: "bash", uid: 1, mount_dir: "./home" }
+02:26:57 [INFO] info ==== BowlArg { debug: Some(true), command: "a", uid: 1, mount_directory: "./test_dir" }
+02:26:57 [DEBUG] (1) bowl_rs::container: create container process
+02:26:57 [DEBUG] (1) bowl_rs::container: Success, cleanup and exit
+02:26:57 [DEBUG] (1) bowl_rs::container: clean container

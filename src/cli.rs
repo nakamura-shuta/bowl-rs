@@ -1,14 +1,19 @@
+use crate::errors::Errcode;
+
 use clap::Parser;
 use log::*;
 use simplelog::*;
 use std::fs::File;
 use std::path::PathBuf;
 
+use std::os::unix::io::RawFd;
+
+use anyhow::{self};
+
 #[derive(Debug, Parser)]
 #[clap(name = "Bowl RS", author = "syuta", version = "v0.1")]
-
 pub struct BowlArg {
-    //debug: デバッグ メッセージまたは通常のログを表示するために使用されます。
+    //ログメッセージのレベルを設定するために使用
     #[clap(short, long)]
     debug: Option<bool>,
 
@@ -22,10 +27,12 @@ pub struct BowlArg {
 
     //コンテナ内のroot directoryとして使うdirectory
     #[clap(short, long)]
-    pub mount_dir: PathBuf,
+    pub mount_directory: PathBuf,
 }
 
-pub fn parse_args() -> BowlArg {
+/// parse argument
+
+pub fn parse_args() -> anyhow::Result<BowlArg> {
     let args = BowlArg::parse();
 
     //set log level
@@ -34,7 +41,11 @@ pub fn parse_args() -> BowlArg {
         _ => setting_log(LevelFilter::Info),
     }
 
-    args
+    if !args.mount_directory.exists() || !args.mount_directory.is_dir() {
+        return Err(Errcode::InvalidArgument("mount_directory").into());
+    }
+
+    Ok(args)
 }
 
 /// log level setting.
@@ -54,16 +65,3 @@ fn setting_log(log_level: LevelFilter) {
     ])
     .unwrap();
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-
-//     #[test]
-//     fn parse_success() {
-//         let larger = Rectangle { length: 8, width: 7 };
-//         let smaller = Rectangle { length : 5, width: 1 };
-
-//         assert!(larger.can_hold(&smaller));
-//     }
-// }
