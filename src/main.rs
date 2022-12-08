@@ -1,8 +1,8 @@
 mod cli;
-mod ipc;
 mod config_opts;
 mod container;
 mod errors;
+mod ipc;
 
 use cli::parse_args;
 use log::{error, info};

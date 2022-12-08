@@ -1,3 +1,6 @@
+use nix::unistd::close;
+use std::os::unix::io::RawFd;
+
 use crate::cli::BowlArg;
 use crate::config_opts::ContainerOptions;
 use crate::errors::Errcode;
@@ -6,14 +9,18 @@ use anyhow::{self};
 use log::{debug, error};
 
 pub struct BowlContainer {
+    sockets: (RawFd, RawFd),
     config: ContainerOptions,
 }
 
 impl BowlContainer {
     ///ContainerOptionsのCLI引数から構造体を作成する
     pub fn new(args: BowlArg) -> anyhow::Result<BowlContainer> {
-        let config = ContainerOptions::new(args.command, args.uid, args.mount_directory)?;
-        Ok(BowlContainer { config })
+        let (config,sockets) = ContainerOptions::new(args.command, args.uid, args.mount_directory)?;
+        Ok(BowlContainer {
+            sockets,
+            config,
+        })
     }
 
     ///createコンテナのプロセスをcreate
