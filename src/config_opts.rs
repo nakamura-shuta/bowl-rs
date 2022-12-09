@@ -68,7 +68,8 @@ mod tests {
                 assert_eq!(config.args, args);
                 assert_eq!(config.uid, 0);
                 assert_eq!(config.mount_directory, PathBuf::from(PATH));
-                println!("{:?}",config.fd);
+                assert!(row_fd1 > 0);
+                assert!(row_fd2 > 0);
             }
             Err(_) => panic!("assert error"),
         }

@@ -25,6 +25,8 @@ impl BowlContainer {
 
     ///createコンテナのプロセスをcreate
     pub fn create_process(&mut self) -> anyhow::Result<()> {
+        //let pid = generate_child_process(self.config.clone())?;
+        //self.child_pid = Some(pid);
         debug!("create container process");
         Ok(())
     }
@@ -32,6 +34,15 @@ impl BowlContainer {
     ///exit前に呼び出して状態をcleanにする
     pub fn clean(&mut self) -> anyhow::Result<()> {
         debug!("cleanup container");
+        if let Err(e) = close(self.sockets.0){
+            error!("Unable to close write socket: {:?}", e);
+            return Err(Errcode::SocketError(3).into());
+        }
+
+        if let Err(e) = close(self.sockets.1){
+            error!("Unable to close read socket: {:?}", e);
+            return Err(Errcode::SocketError(4).into());
+        }
         Ok(())
     }
 }
