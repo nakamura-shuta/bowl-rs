@@ -4,6 +4,7 @@ mod child;
 mod container;
 mod errors;
 mod ipc;
+mod host;
 
 use cli::parse_args;
 use log::{error, info};

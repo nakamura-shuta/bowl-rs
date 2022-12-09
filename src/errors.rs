@@ -16,4 +16,10 @@ pub enum Errcode {
 
     #[error("Child Process Error")]
     ChildProcessError(u8),
+
+    #[error("Hostname Error")]
+    HostnameError(u8),
+
+    #[error("Generate Word Error")]
+    WordError,
 }
