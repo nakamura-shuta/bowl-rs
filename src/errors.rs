@@ -10,4 +10,10 @@ pub enum Errcode {
 
     #[error("Socket Error")]
     SocketError(u32),
+
+    #[error("Container Error")]
+    ContainerError(u8),
+
+    #[error("Child Process Error")]
+    ChildProcessError(u8),
 }

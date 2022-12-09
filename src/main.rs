@@ -1,5 +1,6 @@
 mod cli;
 mod config_opts;
+mod child;
 mod container;
 mod errors;
 mod ipc;
