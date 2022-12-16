@@ -1,19 +1,26 @@
-use crate::errors::Errcode;
 use crate::config_opts::ContainerOptions;
-
-use nix::unistd::Pid;
+use crate::errors::Errcode;
+use crate::mount::set_mount_point;
+use crate::host::set_container_hostname;
 use nix::sched::clone;
-use nix::sys::signal::Signal;
 use nix::sched::CloneFlags;
+use nix::sys::signal::Signal;
+use nix::unistd::Pid;
 
-use log::{info,error};
+use log::{error, info};
 
 use anyhow::{self};
 
 const STACK_SIZE: usize = 1024 * 1024;
 
-///Dummy function that simply echoes the argument to be executed
 fn child(config: ContainerOptions) -> isize {
+    match init_container_config(&config) {
+        Ok(_) => info!("Container init successfully"),
+        Err(e) => {
+            error!("Error while init container: {:?}", e);
+            return -1;
+        }
+    }
     info!("Starting container with command {} and args {:?}", config.path.to_str().unwrap(), config.args);
     0
 }
@@ -48,13 +55,18 @@ pub fn create_child_process(config: ContainerOptions) -> anyhow::Result<Pid> {
         Box::new(|| child(config.clone())),
         &mut tmp_stack,
         flags,
-        Some(Signal::SIGCHLD as i32)
-    )
-    {
+        Some(Signal::SIGCHLD as i32),
+    ) {
         Ok(pid) => Ok(pid),
         Err(err) => {
-            error!("{:?}",err);
+            error!("{:?}", err);
             Err(Errcode::ChildProcessError(0).into())
         }
     }
+}
+
+fn init_container_config(config: &ContainerOptions) -> anyhow::Result<()> {
+    set_container_hostname(&config.hostname)?;
+    set_mount_point(&config.mount_directory)?;
+    Ok(())
 }

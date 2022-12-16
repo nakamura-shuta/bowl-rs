@@ -1,8 +1,8 @@
 use crate::errors::Errcode;
 
+use log::error;
 use nix::sys::socket::{recv, send, socketpair, AddressFamily, MsgFlags, SockFlag, SockType};
 use std::os::unix::io::RawFd;
-use log::{error};
 
 use anyhow::{self};
 
@@ -27,7 +27,6 @@ pub fn send_boolean(fd: RawFd, boolean: bool) -> anyhow::Result<()> {
     };
     Ok(())
 }
-
 
 pub fn recv_boolean(fd: RawFd) -> anyhow::Result<bool> {
     let mut data: [u8; 1] = [0];

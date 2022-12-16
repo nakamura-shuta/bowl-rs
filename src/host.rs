@@ -1,6 +1,7 @@
 use crate::errors::Errcode;
+use nix::unistd::sethostname;
 use anyhow::{self};
-
+use log::{error, debug};
 
 ///ランダムなホスト名を生成
 pub fn generate_host() -> anyhow::Result<String> {
@@ -9,6 +10,19 @@ pub fn generate_host() -> anyhow::Result<String> {
     Ok(format!("{}-{}", host1, host2))
 }
 
+///ホスト名をセット
+pub fn set_container_hostname(hostname: &String) -> anyhow::Result<()> {
+    match sethostname(hostname){
+        Ok(_) => {
+            debug!("Container hostname is now {}", hostname);
+            Ok(())
+        },
+        Err(_) => {
+            error!("Can not set hostname {}", hostname);
+            Err(Errcode::HostnameError(0).into())
+        }
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -16,7 +30,7 @@ mod tests {
     #[test]
     fn generate_host_success() {
         let host = generate_host();
-        println!("{:?}",host);
+        println!("{:?}", host);
         assert!(host.unwrap().len() > 3);
     }
 }

@@ -6,8 +6,6 @@ use simplelog::*;
 use std::fs::File;
 use std::path::PathBuf;
 
-use std::os::unix::io::RawFd;
-
 use anyhow::{self};
 
 #[derive(Debug, Parser)]

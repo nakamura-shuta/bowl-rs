@@ -22,4 +22,7 @@ pub enum Errcode {
 
     #[error("Generate Word Error")]
     WordError,
+
+    #[error("Mount Error")]
+    MountError(u8),
 }

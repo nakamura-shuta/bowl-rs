@@ -1,5 +1,6 @@
 use crate::errors::Errcode;
 use crate::ipc::create_sockets;
+use crate::host::generate_host;
 
 use std::ffi::CString;
 use std::os::unix::io::RawFd;
@@ -17,6 +18,8 @@ pub struct ContainerOptions {
     pub mount_directory: PathBuf,
     //file descripter
     pub fd: RawFd,
+    ///ホスト名
+    pub hostname:String,
 }
 
 impl ContainerOptions {
@@ -25,8 +28,7 @@ impl ContainerOptions {
         uid: u32,
         mount_directory: PathBuf,
     ) -> Result<(ContainerOptions, (RawFd, RawFd)), Errcode> {
-
-        let sockets = create_sockets()?;
+        let _sockets = create_sockets()?;
 
         let args: Vec<CString> = command
             .split_ascii_whitespace()
@@ -42,9 +44,10 @@ impl ContainerOptions {
                 args,
                 uid,
                 mount_directory,
-                fd: sockets.1.clone(),
+                fd: sockets.1,
+                hostname: generate_host()?,
             },
-            sockets
+            sockets,
         ))
     }
 }
@@ -52,7 +55,6 @@ impl ContainerOptions {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nix::sys::socket::SockFlag;
 
     const PATH: &str = "./test";
     const COMMAND: &str = "bash";
@@ -63,7 +65,7 @@ mod tests {
         let config = ContainerOptions::new(COMMAND.to_string(), 0, pb);
         let args = vec![CString::new("bash").unwrap()];
         match config {
-            Ok((config,(row_fd1,row_fd2))) => {
+            Ok((config, (row_fd1, row_fd2))) => {
                 assert_eq!(config.path, CString::new(COMMAND).unwrap());
                 assert_eq!(config.args, args);
                 assert_eq!(config.uid, 0);

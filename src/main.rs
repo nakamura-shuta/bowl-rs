@@ -1,10 +1,11 @@
+mod child;
 mod cli;
 mod config_opts;
-mod child;
 mod container;
 mod errors;
-mod ipc;
 mod host;
+mod ipc;
+mod mount;
 
 use cli::parse_args;
 use log::{error, info};
