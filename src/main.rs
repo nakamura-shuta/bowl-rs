@@ -8,6 +8,7 @@ mod ipc;
 mod mount;
 mod namespace;
 mod capa;
+mod syscalls;
 
 use cli::parse_args;
 use log::{error, info};

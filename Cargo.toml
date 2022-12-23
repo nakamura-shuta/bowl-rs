@@ -14,3 +14,5 @@ clap = { version = "4.0.29", features = ["derive"] }
 anyhow = "1.0.66"
 random_word = "0.3.0"
 capctl = "0.2.2"
+syscallz = "0.16.1"
+libc = "0.2.139"
