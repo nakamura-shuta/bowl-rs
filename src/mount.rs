@@ -4,7 +4,7 @@ use log::{debug, error};
 use std::path::PathBuf;
 
 use nix::mount::{mount, umount2, MntFlags, MsFlags};
-use nix::unistd::{pivot_root, chdir};
+use nix::unistd::{chdir, pivot_root};
 use std::fs::create_dir_all;
 use std::fs::remove_dir;
 
@@ -112,32 +112,43 @@ pub fn set_mount_point(_mount_directory: &PathBuf) -> anyhow::Result<()> {
     debug!("Setting mount points ...");
 
     // 1.Mount the system root in /container
-    mount_directory(None, &PathBuf::from("/"), vec![MsFlags::MS_REC, MsFlags::MS_PRIVATE])?;
+    mount_directory(
+        None,
+        &PathBuf::from("/"),
+        vec![MsFlags::MS_REC, MsFlags::MS_PRIVATE],
+    )?;
     let new_root = PathBuf::from(format!("/tmp/bowl.{}", random_string(12)));
-    debug!("Mount temp directory {}", new_root.as_path().to_str().unwrap());
-    
+    debug!(
+        "Mount temp directory {}",
+        new_root.as_path().to_str().unwrap()
+    );
+
     // 2.Create a new temporary directory
     create_directory(&new_root)?;
 
     // 3.Mount a user-specified directory in the temporary directory
-    mount_directory(Some(&_mount_directory), &new_root, vec![MsFlags::MS_BIND, MsFlags::MS_PRIVATE])?;
+    mount_directory(
+        Some(_mount_directory),
+        &new_root,
+        vec![MsFlags::MS_BIND, MsFlags::MS_PRIVATE],
+    )?;
 
     // 4.Perform a root pivot on the two mounted directories
     debug!("Pivoting root");
     let old_root_tail = format!("oldroot.{}", random_string(6));
     let put_old = new_root.join(PathBuf::from(old_root_tail.clone()));
     create_directory(&put_old)?;
-    if let Err(_) = pivot_root(&new_root, &put_old) {
+    if pivot_root(&new_root, &put_old).is_err() {
         return Err(Errcode::MountError(4).into());
     }
 
     // 5.Unmount and delete unneeded directories
     debug!("Unmounting old root");
     let old_root = PathBuf::from(format!("/{}", old_root_tail));
-    if let Err(_) = chdir(&PathBuf::from("/")) {
+    if chdir(&PathBuf::from("/")).is_err() {
         return Err(Errcode::MountError(5).into());
     }
-    
+
     unmount_path(&old_root)?;
     delete_dir(&old_root)?;
 
@@ -146,7 +157,7 @@ pub fn set_mount_point(_mount_directory: &PathBuf) -> anyhow::Result<()> {
 
 /// Clean mount.
 /// Placeholder for when you need it someday
-pub fn clean_mount(_rootpath: &PathBuf) -> Result<(), Errcode>{
+pub fn clean_mount(_rootpath: &PathBuf) -> Result<(), Errcode> {
     //unmount_path(&rootpath)?;
     Ok(())
 }

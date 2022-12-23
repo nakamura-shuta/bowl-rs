@@ -1,6 +1,7 @@
 use crate::child::create_child_process;
 use crate::cli::BowlArg;
 use crate::config_opts::ContainerOptions;
+use crate::namespace::handle_child_uid_map;
 use crate::errors::Errcode;
 use crate::mount::clean_mount;
 
@@ -32,8 +33,12 @@ impl BowlContainer {
 
     ///createコンテナのプロセスをcreate
     pub fn create_process(&mut self) -> anyhow::Result<()> {
+        //child process作成直後,
+        //containerはhandle)child_uid_mapを実行して
+        //シグナルが操作を実行するのを待つ
         debug!("create container start");
         let pid = create_child_process(self.config.clone())?;
+        handle_child_uid_map(pid, self.sockets.0)?;
         self.child_pid = Some(pid);
         debug!("create container finished");
         Ok(())

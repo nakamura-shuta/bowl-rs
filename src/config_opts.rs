@@ -1,6 +1,6 @@
 use crate::errors::Errcode;
-use crate::ipc::create_sockets;
 use crate::host::generate_host;
+use crate::ipc::create_sockets;
 
 use std::ffi::CString;
 use std::os::unix::io::RawFd;
@@ -19,7 +19,7 @@ pub struct ContainerOptions {
     //file descripter
     pub fd: RawFd,
     ///ホスト名
-    pub hostname:String,
+    pub hostname: String,
 }
 
 impl ContainerOptions {

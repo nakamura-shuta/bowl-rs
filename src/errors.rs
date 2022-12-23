@@ -25,4 +25,10 @@ pub enum Errcode {
 
     #[error("Mount Error")]
     MountError(u8),
+
+    #[error("Namespace Error")]
+    NamespaceError(u8),
+
+    #[error("Capabilitie Error")]
+    CapaError(u8),
 }
