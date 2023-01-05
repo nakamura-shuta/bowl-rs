@@ -4,6 +4,7 @@ use crate::host::set_container_hostname;
 use crate::mount::set_mount_point;
 use crate::namespace::user_namespace;
 use crate::capa::set_capa;
+use crate::syscalls::set_syscalls;
 
 use nix::unistd::{Pid, close};
 use nix::sched::clone;
@@ -22,6 +23,7 @@ fn init_container_config(config: &ContainerOptions) -> anyhow::Result<()> {
     set_mount_point(&config.mount_directory)?;
     user_namespace(config.fd, config.uid)?;
     set_capa()?;
+    set_syscalls()?;
     Ok(())
 }
 

@@ -34,4 +34,7 @@ pub enum Errcode {
     
     #[error("Syscalls Error")]
     SyscallsError(u8),
+
+    #[error("Resources Error")]
+    ResourcesError(u8),
 }

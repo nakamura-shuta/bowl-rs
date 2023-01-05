@@ -9,6 +9,7 @@ mod mount;
 mod namespace;
 mod capa;
 mod syscalls;
+mod resource;
 
 use cli::parse_args;
 use log::{error, info};

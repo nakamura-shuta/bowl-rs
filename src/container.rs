@@ -4,6 +4,9 @@ use crate::config_opts::ContainerOptions;
 use crate::namespace::handle_child_uid_map;
 use crate::errors::Errcode;
 use crate::mount::clean_mount;
+use crate::resource::restrict_resources;
+use crate::resource::clean_cgroups;
+
 
 use nix::sys::wait::waitpid;
 use nix::unistd::close;
@@ -38,6 +41,7 @@ impl BowlContainer {
         //シグナルが操作を実行するのを待つ
         debug!("create container start");
         let pid = create_child_process(self.config.clone())?;
+        restrict_resources(&self.config.hostname, pid)?;
         handle_child_uid_map(pid, self.sockets.0)?;
         self.child_pid = Some(pid);
         debug!("create container finished");
@@ -47,6 +51,8 @@ impl BowlContainer {
     ///exit前に呼び出して状態をcleanにする
     pub fn clean(&mut self) -> anyhow::Result<()> {
         debug!("cleanup container");
+        clean_mount(&self.config.mount_directory)?;
+
         if let Err(e) = close(self.sockets.0) {
             error!("Unable to close write socket: {:?}", e);
             return Err(Errcode::SocketError(3).into());
@@ -56,6 +62,12 @@ impl BowlContainer {
             error!("Unable to close read socket: {:?}", e);
             return Err(Errcode::SocketError(4).into());
         }
+
+        if let Err(e) = clean_cgroups(&self.config.hostname){
+            log::error!("Cgroups cleaning failed: {}", e);
+            return Err(e);
+        }
+        
         Ok(())
     }
 
