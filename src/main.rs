@@ -1,3 +1,4 @@
+mod capa;
 mod child;
 mod cli;
 mod config_opts;
@@ -7,9 +8,8 @@ mod host;
 mod ipc;
 mod mount;
 mod namespace;
-mod capa;
-mod syscalls;
 mod resource;
+mod syscalls;
 
 use cli::parse_args;
 use log::{error, info};

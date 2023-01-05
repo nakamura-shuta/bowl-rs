@@ -108,7 +108,10 @@ pub fn mount_directory(
 /// 4.Perform a root pivot on the two mounted directories
 /// 5.Unmount and delete unneeded directories
 /// see : https://man7.org/linux/man-pages/man7/mount_namespaces.7.html
-pub fn set_mount_point(_mount_directory: &PathBuf) -> anyhow::Result<()> {
+pub fn set_mount_point(
+    _mount_directory: &PathBuf,
+    add_paths: &Vec<(PathBuf, PathBuf)>,
+) -> anyhow::Result<()> {
     debug!("Setting mount points ...");
 
     // 1.Mount the system root in /container
@@ -132,6 +135,18 @@ pub fn set_mount_point(_mount_directory: &PathBuf) -> anyhow::Result<()> {
         &new_root,
         vec![MsFlags::MS_BIND, MsFlags::MS_PRIVATE],
     )?;
+
+    // 3.5 Mount additional paths
+    log::debug!("Mounting additionnal paths");
+    for (inpath, mntpath) in add_paths.iter() {
+        let outpath = new_root.join(mntpath);
+        create_directory(&outpath)?;
+        mount_directory(
+            Some(inpath),
+            &outpath,
+            vec![MsFlags::MS_PRIVATE, MsFlags::MS_BIND],
+        )?;
+    }
 
     // 4.Perform a root pivot on the two mounted directories
     debug!("Pivoting root");

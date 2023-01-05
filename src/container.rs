@@ -1,17 +1,18 @@
 use crate::child::create_child_process;
 use crate::cli::BowlArg;
 use crate::config_opts::ContainerOptions;
-use crate::namespace::handle_child_uid_map;
 use crate::errors::Errcode;
 use crate::mount::clean_mount;
-use crate::resource::restrict_resources;
+use crate::namespace::handle_child_uid_map;
 use crate::resource::clean_cgroups;
-
+use crate::resource::restrict_resources;
 
 use nix::sys::wait::waitpid;
 use nix::unistd::close;
 use nix::unistd::Pid;
 use std::os::unix::io::RawFd;
+
+use std::path::PathBuf;
 
 use anyhow::{self};
 use log::{debug, error};
@@ -25,8 +26,22 @@ pub struct BowlContainer {
 impl BowlContainer {
     ///ContainerOptionsのCLI引数から構造体を作成する
     pub fn new(args: BowlArg) -> anyhow::Result<BowlContainer> {
+        let mut add_paths = vec![];
+        for ap_pair in args.add_paths.iter() {
+            let mut pair = ap_pair.to_str().unwrap().split(':');
+            let frompath = PathBuf::from(pair.next().unwrap())
+                .canonicalize()
+                .expect("Cannot canonicalize path")
+                .to_path_buf();
+            let mntpath = PathBuf::from(pair.next().unwrap())
+                .strip_prefix("/")
+                .expect("Cannot strip prefix from path")
+                .to_path_buf();
+            add_paths.push((frompath, mntpath));
+        }
+
         let (config, sockets) =
-            ContainerOptions::new(args.command, args.uid, args.mount_directory)?;
+            ContainerOptions::new(args.command, args.uid, args.mount_directory, add_paths)?;
         Ok(BowlContainer {
             sockets,
             config,
@@ -63,11 +78,11 @@ impl BowlContainer {
             return Err(Errcode::SocketError(4).into());
         }
 
-        if let Err(e) = clean_cgroups(&self.config.hostname){
+        if let Err(e) = clean_cgroups(&self.config.hostname) {
             log::error!("Cgroups cleaning failed: {}", e);
             return Err(e);
         }
-        
+
         Ok(())
     }
 

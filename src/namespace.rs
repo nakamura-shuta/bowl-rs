@@ -13,7 +13,6 @@ use log::{debug, info};
 
 ///setup user namespace with UID
 pub fn user_namespace(fd: RawFd, uid: u32) -> anyhow::Result<()> {
-
     ///ユーザー名前空間の共有を解除して、
     ///呼び出し元のプロセスが既存のプロセスと共有されていない
     ///新しいユーザー名前空間に移動.
@@ -72,8 +71,8 @@ pub fn user_namespace(fd: RawFd, uid: u32) -> anyhow::Result<()> {
 //プロセスの名前空間内外のユーザ ID をマッピングしている。
 ///書式 [ID-inside-ns ID-outside-ns length]
 ///
-////proc/<pid>/uidmap ファイルに 
-// 0 1000 5 
+////proc/<pid>/uidmap ファイルに
+// 0 1000 5
 ///が含まれている場合、コンテナ内で UID 0 を持つユーザーは、
 ///コンテナの外では UID 1000 を持つ。
 ///同様に、内部で1のUIDは外部で1001のUIDにマップされる.
@@ -83,7 +82,7 @@ pub fn user_namespace(fd: RawFd, uid: u32) -> anyhow::Result<()> {
 ///UIDとGIDを10000以上マッピングしているのは、
 ///既存のidと衝突しないようにするため.
 ///UIDは最大2000個までマッピングされる.
-///これから再開すると、含まれるプロセス (PIDで一致) が UID 0 を持つと主張する 
+///これから再開すると、含まれるプロセス (PIDで一致) が UID 0 を持つと主張する
 ///(あるいは自分自身を設定する) 場合、カーネルはそれを 10000 の UID で見ることになります。
 ///GIDについても同じ.
 

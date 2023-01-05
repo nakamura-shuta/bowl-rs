@@ -2,7 +2,7 @@ use crate::errors::Errcode;
 
 use capctl::caps::Cap;
 use capctl::caps::FullCapState;
-use log::{debug};
+use log::debug;
 
 use anyhow::{self};
 
@@ -27,15 +27,16 @@ const CAPABILITIES_DROP: [Cap; 21] = [
     Cap::SYS_RAWIO,
     Cap::SYS_RESOURCE,
     Cap::SYS_TIME,
-    Cap::WAKE_ALARM
+    Cap::WAKE_ALARM,
 ];
-
 
 pub fn set_capa() -> anyhow::Result<()> {
     debug!("Clearing unwanted capabilities ...");
     if let Ok(mut caps) = FullCapState::get_current() {
-        caps.bounding.drop_all(CAPABILITIES_DROP.iter().map(|&cap| cap));
-        caps.inheritable.drop_all(CAPABILITIES_DROP.iter().map(|&cap| cap));
+        caps.bounding
+            .drop_all(CAPABILITIES_DROP.iter().copied());
+        caps.inheritable
+            .drop_all(CAPABILITIES_DROP.iter().copied());
         Ok(())
     } else {
         Err(Errcode::CapaError(0).into())

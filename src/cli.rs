@@ -26,10 +26,13 @@ pub struct BowlArg {
     //コンテナ内のroot directoryとして使うdirectory
     #[clap(short, long)]
     pub mount_directory: PathBuf,
+
+    /// コンテナ内のディレクトリをマウント
+    #[clap(short, long)]
+    pub add_paths: Vec<PathBuf>,
 }
 
 /// parse argument
-
 pub fn parse_args() -> anyhow::Result<BowlArg> {
     let args = BowlArg::parse();
 

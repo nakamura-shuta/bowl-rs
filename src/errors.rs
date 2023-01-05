@@ -31,7 +31,7 @@ pub enum Errcode {
 
     #[error("Capabilitie Error")]
     CapaError(u8),
-    
+
     #[error("Syscalls Error")]
     SyscallsError(u8),
 

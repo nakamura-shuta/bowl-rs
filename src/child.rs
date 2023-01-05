@@ -1,15 +1,15 @@
+use crate::capa::set_capa;
 use crate::config_opts::ContainerOptions;
 use crate::errors::Errcode;
 use crate::host::set_container_hostname;
 use crate::mount::set_mount_point;
 use crate::namespace::user_namespace;
-use crate::capa::set_capa;
 use crate::syscalls::set_syscalls;
 
-use nix::unistd::{Pid, close, execve};
 use nix::sched::clone;
 use nix::sched::CloneFlags;
 use nix::sys::signal::Signal;
+use nix::unistd::{close, execve, Pid};
 use std::ffi::CString;
 
 use log::{error, info};
@@ -21,7 +21,7 @@ const STACK_SIZE: usize = 1024 * 1024;
 ///initialize Container
 fn init_container_config(config: &ContainerOptions) -> anyhow::Result<()> {
     set_container_hostname(&config.hostname)?;
-    set_mount_point(&config.mount_directory)?;
+    set_mount_point(&config.mount_directory, &config.add_paths)?;
     user_namespace(config.fd, config.uid)?;
     set_capa()?;
     set_syscalls()?;
@@ -38,7 +38,7 @@ fn child(config: ContainerOptions) -> isize {
     }
 
     //使用されなくなったらsocket close.
-    if let Err(_) = close(config.fd){
+    if close(config.fd).is_err() {
         error!("Error while closing socket..");
         return -1;
     }
@@ -51,15 +51,15 @@ fn child(config: ContainerOptions) -> isize {
 
     //CStringを使用していることをRustに伝える.(Cとの互換性が必要)
     //execveが成功した場合、プロセスが実行可能ファイルに置き換えられるので関数はreturnしない
-    let return_code = match execve::<CString, CString>(&config.path, &config.args, &[]){
+    
+
+    match execve::<CString, CString>(&config.path, &config.args, &[]) {
         Ok(_) => 0,
         Err(e) => {
             error!("Error while execute execve: {:?}", e);
             -1
         }
-    };
-
-    return_code
+    }
 }
 
 ///Duplicate the parent process and call the child process
@@ -101,4 +101,3 @@ pub fn create_child_process(config: ContainerOptions) -> anyhow::Result<Pid> {
         }
     }
 }
-

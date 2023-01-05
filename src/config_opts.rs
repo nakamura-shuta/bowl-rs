@@ -20,6 +20,8 @@ pub struct ContainerOptions {
     pub fd: RawFd,
     ///ホスト名
     pub hostname: String,
+    //追加パス
+    pub add_paths: Vec<(PathBuf, PathBuf)>,
 }
 
 impl ContainerOptions {
@@ -27,6 +29,7 @@ impl ContainerOptions {
         command: String,
         uid: u32,
         mount_directory: PathBuf,
+        add_paths: Vec<(PathBuf, PathBuf)>,
     ) -> Result<(ContainerOptions, (RawFd, RawFd)), Errcode> {
         let _sockets = create_sockets()?;
 
@@ -46,6 +49,7 @@ impl ContainerOptions {
                 mount_directory,
                 fd: sockets.1,
                 hostname: generate_host()?,
+                add_paths,
             },
             sockets,
         ))
@@ -61,15 +65,28 @@ mod tests {
 
     #[test]
     fn config_new_success() {
+        let mut add_paths = vec![];
+        let frompath_1 = PathBuf::from("foo");
+        let mntpath_1 = PathBuf::from("bar");
+        add_paths.push((frompath_1, mntpath_1));
+        let frompath_2 = PathBuf::from("buzz");
+        let mntpath_2 = PathBuf::from("hoge");
+        add_paths.push((frompath_2, mntpath_2));
+
         let pb = PathBuf::from(PATH);
-        let config = ContainerOptions::new(COMMAND.to_string(), 0, pb);
+        let config = ContainerOptions::new(COMMAND.to_string(), 0, pb, add_paths);
         let args = vec![CString::new("bash").unwrap()];
+        println!("{:?}", config);
         match config {
             Ok((config, (row_fd1, row_fd2))) => {
                 assert_eq!(config.path, CString::new(COMMAND).unwrap());
                 assert_eq!(config.args, args);
                 assert_eq!(config.uid, 0);
                 assert_eq!(config.mount_directory, PathBuf::from(PATH));
+                assert_eq!(config.add_paths[0].0, PathBuf::from("foo"));
+                assert_eq!(config.add_paths[0].1, PathBuf::from("bar"));
+                assert_eq!(config.add_paths[1].0, PathBuf::from("buzz"));
+                assert_eq!(config.add_paths[1].1, PathBuf::from("hoge"));
                 assert!(row_fd1 > 0);
                 assert!(row_fd2 > 0);
             }
