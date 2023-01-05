@@ -39,8 +39,14 @@ pub fn parse_args() -> anyhow::Result<BowlArg> {
         _ => setting_log(LevelFilter::Info),
     }
 
+    // check args(mount drectory)
     if !args.mount_directory.exists() || !args.mount_directory.is_dir() {
         return Err(Errcode::InvalidArgument("mount_directory").into());
+    }
+
+    // check args(command)
+    if args.command.is_empty() {
+        return Err(Errcode::InvalidArgument("command").into());
     }
 
     Ok(args)

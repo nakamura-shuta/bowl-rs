@@ -6,10 +6,11 @@ use crate::namespace::user_namespace;
 use crate::capa::set_capa;
 use crate::syscalls::set_syscalls;
 
-use nix::unistd::{Pid, close};
+use nix::unistd::{Pid, close, execve};
 use nix::sched::clone;
 use nix::sched::CloneFlags;
 use nix::sys::signal::Signal;
+use std::ffi::CString;
 
 use log::{error, info};
 
@@ -47,7 +48,18 @@ fn child(config: ContainerOptions) -> isize {
         config.path.to_str().unwrap(),
         config.args
     );
-    0
+
+    //CStringを使用していることをRustに伝える.(Cとの互換性が必要)
+    //execveが成功した場合、プロセスが実行可能ファイルに置き換えられるので関数はreturnしない
+    let return_code = match execve::<CString, CString>(&config.path, &config.args, &[]){
+        Ok(_) => 0,
+        Err(e) => {
+            error!("Error while execute execve: {:?}", e);
+            -1
+        }
+    };
+
+    return_code
 }
 
 ///Duplicate the parent process and call the child process
